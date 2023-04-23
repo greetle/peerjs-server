@@ -33,20 +33,24 @@ export class WebSocketServer extends EventEmitter implements IWebSocketServer {
 	private readonly realm: IRealm;
 	private readonly config: CustomConfig;
 	public readonly socketServer: Server;
+	private onCloseInfo: (data: any) => void;
 
 	constructor({
 		server,
 		realm,
 		config,
+		onCloseInfo,
 	}: {
 		server: HttpServer | HttpsServer;
 		realm: IRealm;
 		config: CustomConfig;
+		onCloseInfo: (data: any) => void;
 	}) {
 		super();
 
 		this.setMaxListeners(0);
 
+		this.onCloseInfo = onCloseInfo;
 		this.realm = realm;
 		this.config = config;
 
@@ -95,7 +99,6 @@ export class WebSocketServer extends EventEmitter implements IWebSocketServer {
 						payload: { msg: "ID is taken" },
 					}),
 				);
-
 				return socket.close();
 			}
 
@@ -161,6 +164,8 @@ export class WebSocketServer extends EventEmitter implements IWebSocketServer {
 	}
 
 	private _sendErrorAndClose(socket: WebSocket, msg: Errors): void {
+		this.onCloseInfo && this.onCloseInfo(msg);
+
 		socket.send(
 			JSON.stringify({
 				type: MessageType.ERROR,
