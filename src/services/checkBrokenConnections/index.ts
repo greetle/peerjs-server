@@ -11,7 +11,7 @@ export class CheckBrokenConnections {
 	private timeoutId: NodeJS.Timeout | null = null;
 	private readonly realm: IRealm;
 	private readonly config: CustomConfig;
-	private readonly onClose?: (client: IClient) => void;
+	private readonly onClose?: (client: IClient, data: any) => void;
 
 	constructor({
 		realm,
@@ -22,7 +22,7 @@ export class CheckBrokenConnections {
 		realm: IRealm;
 		config: CustomConfig;
 		checkInterval?: number;
-		onClose?: (client: IClient) => void;
+		onClose?: (client: IClient, data: any) => void;
 	}) {
 		this.realm = realm;
 		this.config = config;
@@ -65,7 +65,6 @@ export class CheckBrokenConnections {
 			const timeSinceLastPing = now - client.getLastPing();
 
 			if (timeSinceLastPing < aliveTimeout) continue;
-
 			try {
 				client.getSocket()?.close();
 			} finally {
@@ -74,7 +73,7 @@ export class CheckBrokenConnections {
 
 				client.setSocket(null);
 
-				this.onClose?.(client);
+				this.onClose?.(client, { error: `Cannot ping: ${timeSinceLastPing} ${aliveTimeout} ` });
 			}
 		}
 	}

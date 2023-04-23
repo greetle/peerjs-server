@@ -47,7 +47,8 @@ export const createInstance = ({
 	const checkBrokenConnections = new CheckBrokenConnections({
 		realm,
 		config,
-		onClose: (client) => {
+		onClose: (client, error) => {
+			options.onTimeout && options.onTimeout(error);
 			app.emit("disconnect", client);
 		},
 	});
@@ -87,10 +88,13 @@ export const createInstance = ({
 	});
 
 	wss.on("close", (client: IClient) => {
+		options.onTimeout && options.onTimeout("close-event");
 		app.emit("disconnect", client);
 	});
 
 	wss.on("error", (error: Error) => {
+		console.log(error);
+		options.onTimeout && options.onTimeout("error " + error);
 		app.emit("error", error);
 	});
 

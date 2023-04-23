@@ -19,6 +19,7 @@ export interface IConfig {
 	readonly generateClientId?: () => string;
 	readonly createWebSocketServer?: (options: ServerOptions) => WebSocketServer;
 	readonly corsOptions: CorsOptions;
+	readonly onTimeout?: (info: any) => any;
 }
 
 const defaultConfig: IConfig = {
